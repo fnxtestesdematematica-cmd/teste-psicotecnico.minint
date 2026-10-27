@@ -328,6 +328,266 @@
         border: 1px solid rgba(255, 107, 107, 0.3);
       }
 
+      .mobile-dock {
+        display: none;
+      }
+
+      @media (max-width: 699px) {
+        :root {
+          --bg: #090a0f;
+          --bg-deep: #05060a;
+          --panel: #11131a;
+          --panel-soft: #171a22;
+          --panel-strong: #11131a;
+          --gold: #25f4ee;
+          --gold-dark: #16c9c4;
+          --text: #f7f7fa;
+          --muted: #a7aab5;
+          --input: #1a1c24;
+          --input-border: rgba(255, 255, 255, 0.1);
+        }
+
+        html {
+          scroll-padding-top: 74px;
+          scroll-padding-bottom: 88px;
+          background: var(--bg);
+        }
+
+        html,
+        body {
+          min-height: 100%;
+          background: var(--bg);
+        }
+
+        body {
+          padding-bottom: calc(76px + env(safe-area-inset-bottom));
+        }
+
+        .page-shell {
+          min-height: 100svh;
+          padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .site-topbar {
+          position: sticky;
+          top: 0;
+          z-index: 5;
+          min-height: 56px;
+          padding: 10px 16px;
+          background: rgba(9, 10, 15, 0.88);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+        }
+
+        .brand-mini {
+          font-size: 0.88rem;
+        }
+
+        .brand-badge {
+          width: 30px;
+          height: 30px;
+          color: var(--gold);
+          background: rgba(37, 244, 238, 0.1);
+          border-color: rgba(37, 244, 238, 0.4);
+        }
+
+        .topbar-badge {
+          min-width: 0;
+          padding: 7px 11px;
+          background: rgba(37, 244, 238, 0.12);
+          color: var(--gold);
+          border: 1px solid rgba(37, 244, 238, 0.25);
+        }
+
+        .content-wrap {
+          width: 100%;
+          padding: 14px 12px 24px;
+        }
+
+        .page-header {
+          align-items: flex-start;
+          gap: 12px;
+          padding: 18px 16px;
+          background:
+            radial-gradient(ellipse at 100% 0, rgba(37, 244, 238, 0.11), transparent 55%),
+            #11131a;
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 22px;
+        }
+
+        .page-header .icon {
+          flex: 0 0 42px;
+          color: var(--gold);
+          background: rgba(37, 244, 238, 0.1);
+          border-color: rgba(37, 244, 238, 0.28);
+        }
+
+        .eyebrow {
+          font-size: 0.68rem;
+          letter-spacing: 0.1em;
+        }
+
+        .page-header h1 {
+          font-size: clamp(1.3rem, 6vw, 1.65rem);
+          line-height: 1.12;
+        }
+
+        .page-header p {
+          max-width: 28rem;
+          font-size: 0.82rem;
+          line-height: 1.5;
+        }
+
+        .card {
+          margin-top: 12px;
+          padding: 18px 16px 20px;
+          background: #11131a;
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 22px;
+          box-shadow: 0 16px 42px rgba(0, 0, 0, 0.28);
+        }
+
+        .form-section {
+          padding-top: 2px;
+        }
+
+        .form-section + .form-section {
+          margin-top: 22px;
+          padding-top: 20px;
+          border-top-color: rgba(255, 255, 255, 0.09);
+        }
+
+        .section-title {
+          margin-bottom: 16px;
+          font-size: 0.76rem;
+          letter-spacing: 0.11em;
+        }
+
+        .grid {
+          gap: 16px;
+        }
+
+        .field {
+          gap: 8px;
+        }
+
+        label {
+          font-size: 0.84rem;
+        }
+
+        input,
+        textarea,
+        select {
+          min-height: 54px;
+          padding: 14px 15px;
+          border-radius: 14px;
+          font-size: 16px;
+        }
+
+        select {
+          appearance: none;
+          background-image: linear-gradient(45deg, transparent 50%, #25f4ee 50%), linear-gradient(135deg, #25f4ee 50%, transparent 50%);
+          background-position: calc(100% - 19px) 23px, calc(100% - 14px) 23px;
+          background-size: 5px 5px, 5px 5px;
+          background-repeat: no-repeat;
+          padding-right: 42px;
+        }
+
+        select option {
+          color: #f7f7fa;
+          background: #171a22;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+          border-color: rgba(37, 244, 238, 0.8);
+          box-shadow: 0 0 0 4px rgba(37, 244, 238, 0.12);
+        }
+
+        textarea {
+          min-height: 116px;
+        }
+
+        .validation-message {
+          min-height: 0;
+        }
+
+        .actions {
+          gap: 10px;
+          margin-top: 22px;
+          padding-top: 18px;
+        }
+
+        .btn {
+          min-height: 52px;
+          width: 100%;
+          border-radius: 15px;
+          font-size: 0.96rem;
+        }
+
+        .btn-primary {
+          background: var(--gold);
+          color: #071011;
+          box-shadow: 0 8px 24px rgba(37, 244, 238, 0.16);
+        }
+
+        .btn-secondary {
+          min-height: 48px;
+          background: #1a1c24;
+          border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .status-message {
+          line-height: 1.5;
+        }
+
+        .mobile-dock {
+          position: fixed;
+          z-index: 10;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          padding: 8px 18px calc(8px + env(safe-area-inset-bottom));
+          background: rgba(12, 13, 18, 0.94);
+          border-top: 1px solid rgba(255, 255, 255, 0.09);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+
+        .dock-link {
+          display: flex;
+          min-height: 48px;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 2px;
+          color: #888b96;
+          font-size: 0.68rem;
+          font-weight: 700;
+          text-decoration: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .dock-link-active {
+          color: var(--gold);
+        }
+
+        .dock-icon {
+          font-size: 1.3rem;
+          line-height: 1;
+        }
+
+        .dock-link:focus-visible {
+          outline: 2px solid var(--gold);
+          outline-offset: -2px;
+          border-radius: 12px;
+        }
+      }
+
       @media (min-width: 700px) {
         .content-wrap {
           padding-top: 26px;
@@ -360,9 +620,18 @@
           min-width: 180px;
         }
       }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
     </style>
   </head>
-  <body>
+  <body id="pageTop">
     <div class="page-shell">
       <div class="site-topbar">
         <div class="brand-mini">
@@ -384,7 +653,7 @@
 
         <main class="card">
         <form id="clienteForm" novalidate>
-          <section class="form-section">
+          <section class="form-section" id="dadosPessoais">
             <h2 class="section-title">Dados pessoais</h2>
             <div class="grid">
               <div class="field">
@@ -457,6 +726,17 @@
         </form>
         </main>
       </div>
+
+      <nav class="mobile-dock" aria-label="Navegação rápida">
+        <a class="dock-link" href="#pageTop">
+          <span class="dock-icon" aria-hidden="true">⌂</span>
+          <span>Início</span>
+        </a>
+        <a class="dock-link dock-link-active" href="#clienteForm">
+          <span class="dock-icon" aria-hidden="true">＋</span>
+          <span>Cadastro</span>
+        </a>
+      </nav>
     </div>
 
     <script>
@@ -673,11 +953,9 @@
             result.id ? `ID: ${result.id}` : '',
             result.rowNumber ? `linha ${result.rowNumber} da aba CLIENTES` : ''
           ].filter(Boolean).join(' · ');
-          const warnings = Array.isArray(result.warnings) ? result.warnings.join(' ') : '';
           const finalMessage = [
             result.message || 'Cliente cadastrado com sucesso!',
-            confirmationDetails,
-            warnings
+            confirmationDetails
           ].filter(Boolean).join(' ');
           setMessage(finalMessage, 'success');
           form.reset();
