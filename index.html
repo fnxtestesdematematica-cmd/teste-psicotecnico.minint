@@ -673,9 +673,11 @@
             result.id ? `ID: ${result.id}` : '',
             result.rowNumber ? `linha ${result.rowNumber} da aba CLIENTES` : ''
           ].filter(Boolean).join(' · ');
+          const warnings = Array.isArray(result.warnings) ? result.warnings.join(' ') : '';
           const finalMessage = [
             result.message || 'Cliente cadastrado com sucesso!',
-            confirmationDetails
+            confirmationDetails,
+            warnings
           ].filter(Boolean).join(' ');
           setMessage(finalMessage, 'success');
           form.reset();

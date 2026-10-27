@@ -6,6 +6,7 @@ function doGet() {
 }
 
 function doPost(e) {
+  let lock;
   try {
     const payload = parseRequestPayload(e);
     const validationErrors = validateIncomingData(payload);
@@ -18,20 +19,42 @@ function doPost(e) {
       });
     }
 
+    lock = LockService.getScriptLock();
+    lock.waitLock(30000);
+
     const sheet = getClientSheet();
     const headerRowNumber = findHeaderRowNumber(sheet);
-    const nextClientId = generateNextClientId(sheet, headerRowNumber);
-    const row = buildRow(sheet, payload, nextClientId, headerRowNumber);
     const rowNumber = findNextAvailableRow(sheet, headerRowNumber);
-    row.forEach((field) => {
-      sheet.getRange(rowNumber, field.column).setValue(field.value);
+    copyTemplateRow(sheet, rowNumber, headerRowNumber);
+
+    const nextClientId = generateNextClientId(sheet, headerRowNumber);
+    const fields = buildRow(sheet, payload, nextClientId, headerRowNumber);
+    const paymentStatusColumn = findHeaderColumn(
+      sheet,
+      headerRowNumber,
+      ['Status de pagamento', 'Estado do pagamento']
+    );
+    const warnings = [];
+
+    fields.forEach((field) => {
+      const cell = sheet.getRange(rowNumber, field.column);
+      if (cell.getFormula()) {
+        if (field.column === paymentStatusColumn) {
+          warnings.push('O estado de pagamento é calculado por uma fórmula; a fórmula foi preservada.');
+          return;
+        }
+        throw new Error('A célula da coluna ' + field.header + ' contém uma fórmula e não foi alterada.');
+      }
+      cell.setValue(field.value);
     });
+    SpreadsheetApp.flush();
 
     return jsonResponse({
       ok: true,
       message: 'Cliente cadastrado com sucesso!',
       id: nextClientId,
-      rowNumber: rowNumber
+      rowNumber: rowNumber,
+      warnings: warnings
     });
   } catch (error) {
     const message = error && error.message ? error.message : 'Erro interno ao gravar o cliente.';
@@ -39,6 +62,10 @@ function doPost(e) {
       ok: false,
       message: message
     });
+  } finally {
+    if (lock && lock.hasLock()) {
+      lock.releaseLock();
+    }
   }
 }
 
@@ -194,7 +221,11 @@ function buildRow(sheet, data, clientId, headerRowNumber) {
     const targetAliases = Array.isArray(headerNames) ? headerNames : [headerNames];
     const found = headers.find((item) => targetAliases.some((alias) => item.header === normalizeHeader(alias)));
     if (!found) return;
-    fieldsToWrite.push({ column: found.index + 1, value: value });
+    fieldsToWrite.push({
+      column: found.index + 1,
+      header: String(headerRow[found.index] || ''),
+      value: value
+    });
   };
 
   setValue(['ID', 'Id'], clientId);
@@ -212,36 +243,80 @@ function buildRow(sheet, data, clientId, headerRowNumber) {
   return fieldsToWrite;
 }
 
+function findHeaderColumn(sheet, headerRowNumber, aliases) {
+  const headers = sheet.getRange(headerRowNumber, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const normalizedAliases = aliases.map((alias) => normalizeHeader(alias));
+  const columnIndex = headers.findIndex((header) => normalizedAliases.includes(normalizeHeader(header)));
+  return columnIndex === -1 ? -1 : columnIndex + 1;
+}
+
+function copyTemplateRow(sheet, targetRow, headerRowNumber) {
+  const firstDataRow = headerRowNumber + 1;
+  const maxRows = sheet.getMaxRows();
+  const modelRow = targetRow > firstDataRow
+    ? targetRow - 1
+    : targetRow < maxRows
+      ? targetRow + 1
+      : targetRow - 1;
+  if (modelRow < firstDataRow) return;
+
+  const lastColumn = sheet.getLastColumn();
+  const modelRange = sheet.getRange(modelRow, 1, 1, lastColumn);
+  const targetRange = sheet.getRange(targetRow, 1, 1, lastColumn);
+
+  modelRange.copyTo(targetRange, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
+  modelRange.copyTo(targetRange, SpreadsheetApp.CopyPasteType.PASTE_DATA_VALIDATION, false);
+  sheet.setRowHeight(targetRow, sheet.getRowHeight(modelRow));
+
+  const modelFormulas = modelRange.getFormulasR1C1()[0];
+  const targetFormulas = targetRange.getFormulasR1C1()[0];
+  modelFormulas.forEach((formula, index) => {
+    if (formula && !targetFormulas[index]) {
+      sheet.getRange(targetRow, index + 1).setFormulaR1C1(formula);
+    }
+  });
+}
+
 function findNextAvailableRow(sheet, headerRowNumber) {
-  const headerRow = sheet.getRange(headerRowNumber, 1, 1, sheet.getLastColumn()).getValues()[0];
-  const normalizedHeaders = headerRow.map((header) => normalizeHeader(header));
-  const paymentStatusAliases = ['status de pagamento', 'estado do pagamento'];
-  const paymentStatusColumn = normalizedHeaders.findIndex((header) =>
-    paymentStatusAliases.some((alias) => header === normalizeHeader(alias))
-  );
   const firstDataRow = headerRowNumber + 1;
   const maxRows = sheet.getMaxRows();
   if (firstDataRow > maxRows) {
     sheet.insertRowsAfter(maxRows, firstDataRow - maxRows);
   }
 
-  const lastRowToScan = Math.min(Math.max(sheet.getLastRow() + 1, firstDataRow), sheet.getMaxRows());
+  const filter = sheet.getFilter();
+  const filterLastRow = filter ? filter.getRange().getLastRow() : headerRowNumber;
+  const lastRowToScan = filter
+    ? Math.min(filterLastRow, sheet.getMaxRows())
+    : Math.min(Math.max(sheet.getLastRow() + 1, firstDataRow), sheet.getMaxRows());
   const rowsToScan = lastRowToScan - firstDataRow + 1;
-  const displayRows = sheet.getRange(firstDataRow, 1, rowsToScan, sheet.getLastColumn()).getDisplayValues();
+  if (rowsToScan < 1) {
+    throw new Error('O filtro da aba CLIENTES não inclui nenhuma linha de dados.');
+  }
 
-  for (let rowIndex = 0; rowIndex < displayRows.length; rowIndex += 1) {
-    const hasData = displayRows[rowIndex].some((value, columnIndex) =>
-      columnIndex !== paymentStatusColumn && String(value || '').trim() !== ''
-    );
-    if (!hasData) {
+  const idColumn = findHeaderColumn(sheet, headerRowNumber, ['ID']);
+  if (idColumn === -1) {
+    throw new Error('A coluna ID não foi encontrada na aba CLIENTES.');
+  }
+
+  const idRange = sheet.getRange(firstDataRow, idColumn, rowsToScan, 1);
+  const ids = idRange.getValues();
+  const idFormulas = idRange.getFormulas();
+  for (let rowIndex = 0; rowIndex < rowsToScan; rowIndex += 1) {
+    if (ids[rowIndex][0] === '' && idFormulas[rowIndex][0] === '') {
       return firstDataRow + rowIndex;
     }
   }
 
-  const nextRow = lastRowToScan + 1;
-  if (nextRow > maxRows) {
-    sheet.insertRowsAfter(maxRows, 1);
+  if (filter) {
+    throw new Error('Não há linhas vazias na área filtrada da aba CLIENTES. Amplie o intervalo do filtro e tente novamente; nenhum dado foi alterado.');
   }
+
+  const nextRow = lastRowToScan + 1;
+  if (nextRow > sheet.getMaxRows()) {
+    sheet.insertRowsAfter(sheet.getMaxRows(), nextRow - sheet.getMaxRows());
+  }
+
   return nextRow;
 }
 

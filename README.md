@@ -17,18 +17,17 @@ const GOOGLE_APPS_SCRIPT_URL = 'COLOQUE_AQUI_O_URL_PUBLICADO_DO_APPS_SCRIPT';
 
 ## Publicar o Google Apps Script
 
-1. Abra o Google Apps Script no Google Drive.
-2. Crie um novo projeto.
-3. Cole o conteúdo de `apps-script/Code.gs`.
-4. Na barra de menu, vá a `Implementar` > `Nova implementação` e escolha `Aplicação Web`.
-5. Em `Quem tem acesso`, escolha a opção adequada ao seu caso: `Qualquer pessoa` ou `Qualquer utilizador da conta Google`.
-6. Copie a URL gerada.
-7. Atualize `GOOGLE_APPS_SCRIPT_URL` no `index.html` se a URL tiver mudado.
-8. Guarde e volte a implementar uma nova versão sempre que alterar o código do Apps Script.
+1. Abra o projeto Google Apps Script associado à planilha de destino.
+2. Substitua o código pelo conteúdo de `apps-script/Code.gs` e salve.
+3. Vá a `Implementar` > `Gerir implementações`, edite a aplicação Web e escolha `Nova versão`.
+4. Mantenha a permissão necessária para o site enviar cadastros e clique em `Implementar`.
+5. Se a URL da implementação mudar, atualize `GOOGLE_APPS_SCRIPT_URL` no `index.html`.
 
-O formulário envia JSON como `text/plain` para evitar o preflight CORS causado por `application/json`. Este formato também é aceite pela versão anterior do endpoint. A versão atual de `apps-script/Code.gs` continua a ser a recomendada, especialmente para encontrar cabeçalhos que começam na segunda linha.
+O formulário envia JSON como `text/plain` para evitar o preflight CORS causado por `application/json`.
 
-O Apps Script grava os dados na primeira linha de cliente vazia abaixo dos cabeçalhos, em vez de usar `appendRow()`. Assim, linhas já formatadas da tabela são reutilizadas e a coluna de estado de pagamento não é alterada.
+O Apps Script procura a primeira linha em que a célula `ID` está realmente vazia (sem valor nem fórmula), independentemente das outras células da linha. Sob bloqueio para evitar colisões entre envios simultâneos, copia a formatação, altura, validações e fórmulas da linha-modelo anterior e grava somente os campos do cliente. Um filtro existente não é alterado; se não houver uma linha vazia dentro do seu intervalo, o script recusa o cadastro com uma mensagem explícita em vez de escrever fora da tabela.
+
+Se a célula de estado de pagamento da linha tiver fórmula, a fórmula é mantida e o formulário apresenta um aviso. Se não tiver fórmula, o estado escolhido é gravado normalmente.
 
 ## Publicar o site com GitHub Pages
 
@@ -50,14 +49,15 @@ O ficheiro da planilha não faz parte da publicação; mantenha-o apenas local e
    - Nome completo
    - Telefone/WhatsApp
    - Valor contratado (Kz)
-4. Clique em `Cadastrar cliente`.
-5. Confirme que a página mostra a mensagem `Cliente cadastrado com sucesso!`.
-6. Abra a planilha Google Sheets e verifique a aba `CLIENTES`.
-7. A nova linha deve incluir:
+4. Para testar sem risco, use uma cópia da planilha e um Apps Script associado a essa cópia.
+5. Clique em `Cadastrar cliente` e confirme o ID e número da linha mostrados na mensagem.
+6. Abra a aba `CLIENTES` na cópia e confirme o registo, a formatação e as fórmulas.
+7. Depois da validação, implemente o código no Apps Script associado à planilha de produção.
+8. A nova linha deve incluir:
    - ID gerado no formato `CLI-0001`, `CLI-0002`, etc.
    - Data de cadastro em `Africa/Luanda`
    - Nome, BI, e-mail, telefone, valor, dia da prova/teste, status de pagamento e observações.
-   - O estado de pagamento selecionado no formulário.
+   - O estado de pagamento selecionado, se a célula não tiver fórmula.
 
 Importante: abrir `index.html` diretamente com `file://` pode bloquear o `fetch` do navegador com `Failed to fetch`. Use um servidor HTTP local ou o endereço do GitHub Pages.
 
@@ -76,7 +76,7 @@ O formulário mapear para a aba `CLIENTES` da seguinte forma:
 | Estado de pagamento | Status de pagamento |
 | Observações | Nota/observações |
 
-O formulário exige a seleção de `Pago`, `Pendente` ou `Pagamento incompleto` e grava essa escolha na coluna `Status de pagamento`. O `ID` e a `Data de cadastro` são gerados pelo sistema e não aparecem no formulário.
+O formulário exige a seleção de `Pago`, `Pendente` ou `Pagamento incompleto`. A escolha é gravada na coluna `Status de pagamento` somente se a célula de destino não tiver fórmula. O `ID` e a `Data de cadastro` são gerados pelo sistema e não aparecem no formulário.
 
 ## Configurações a preencher antes de utilizar
 
@@ -88,7 +88,7 @@ O formulário exige a seleção de `Pago`, `Pendente` ou `Pagamento incompleto` 
 ## Observações importantes
 
 - O formulário não altera outras folhas da planilha.
-- As colunas não preenchidas pelo formulário, incluindo `Status da preparação`, não são alteradas.
+- As colunas não preenchidas pelo formulário, incluindo `Status da preparação`, não são alteradas; fórmulas de destino nunca são substituídas por valores.
 - O botão é desativado durante o envio para evitar duplicações.
 - O formulário é limpo após confirmação de sucesso, mantendo a página aberta para registrar outro cliente.
-- O estado de pagamento é escolhido no formulário e gravado diretamente na planilha.
+- O estado de pagamento escolhido é gravado se a célula não contiver fórmula; uma fórmula existente é preservada.
