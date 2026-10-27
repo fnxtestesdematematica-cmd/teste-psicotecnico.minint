@@ -57,7 +57,7 @@ O ficheiro da planilha não faz parte da publicação; mantenha-o apenas local e
    - ID gerado no formato `CLI-0001`, `CLI-0002`, etc.
    - Data de cadastro em `Africa/Luanda`
    - Nome, BI, e-mail, telefone, valor, dia da prova/teste, status de pagamento e observações.
-   - A coluna `Status de pagamento` fica vazia para a fórmula da planilha calcular automaticamente.
+   - O estado de pagamento selecionado no formulário.
 
 Importante: abrir `index.html` diretamente com `file://` pode bloquear o `fetch` do navegador com `Failed to fetch`. Use um servidor HTTP local ou o endereço do GitHub Pages.
 
@@ -73,9 +73,10 @@ O formulário mapear para a aba `CLIENTES` da seguinte forma:
 | Telefone | Telefone |
 | Valor contratado (Kz) | Valor contratado (Kz) |
 | Dia do teste (Outubro/2026) | Dia da prova/teste |
+| Estado de pagamento | Status de pagamento |
 | Observações | Nota/observações |
 
-A coluna `Status de pagamento` fica vazia no envio para permitir que a fórmula existente da planilha continue a calcular o valor automaticamente. O `ID` e a `Data de cadastro` são gerados pelo sistema e não aparecem no formulário.
+O formulário exige a seleção de `Pago`, `Pendente` ou `Pagamento incompleto` e grava essa escolha na coluna `Status de pagamento`. O `ID` e a `Data de cadastro` são gerados pelo sistema e não aparecem no formulário.
 
 ## Configurações a preencher antes de utilizar
 
@@ -87,7 +88,7 @@ A coluna `Status de pagamento` fica vazia no envio para permitir que a fórmula 
 ## Observações importantes
 
 - O formulário não altera outras folhas da planilha.
-- Não é escrito diretamente sobre células com fórmula.
+- As colunas não preenchidas pelo formulário, incluindo `Status da preparação`, não são alteradas.
 - O botão é desativado durante o envio para evitar duplicações.
 - O formulário é limpo após confirmação de sucesso, mantendo a página aberta para registrar outro cliente.
-- O campo `Estado de pagamento` fica em branco para a fórmula da planilha calcular automaticamente.
+- O estado de pagamento é escolhido no formulário e gravado diretamente na planilha.

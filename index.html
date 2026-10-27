@@ -429,6 +429,17 @@
                 <span class="validation-message" data-error-for="dataTeste"></span>
               </div>
 
+              <div class="field">
+                <label for="estadoPagamento">Estado de pagamento <span class="required-mark">*</span></label>
+                <select id="estadoPagamento" name="estadoPagamento" required>
+                  <option value="">Selecione o estado do pagamento</option>
+                  <option value="Pago">Pago</option>
+                  <option value="Pendente">Pendente</option>
+                  <option value="Pagamento incompleto">Pagamento incompleto</option>
+                </select>
+                <span class="validation-message" data-error-for="estadoPagamento"></span>
+              </div>
+
               <div class="field full-width">
                 <label for="observacoes">Observações</label>
                 <textarea id="observacoes" name="observacoes" maxlength="1000" placeholder="Detalhes relevantes para a preparação..."></textarea>
@@ -534,6 +545,12 @@
               }
             }
             break;
+          case 'estadoPagamento':
+            if (!['Pago', 'Pendente', 'Pagamento incompleto'].includes(value)) {
+              markFieldInvalid(fieldName, 'Selecione um estado de pagamento válido.');
+              return false;
+            }
+            break;
           default:
             break;
         }
@@ -543,7 +560,7 @@
 
       function validateForm() {
         let isValid = true;
-        const fieldsToCheck = ['nomeCompleto', 'email', 'telefone', 'valorContratado', 'dataTeste'];
+        const fieldsToCheck = ['nomeCompleto', 'email', 'telefone', 'valorContratado', 'dataTeste', 'estadoPagamento'];
 
         fieldsToCheck.forEach((fieldName) => {
           if (!validateField(fieldName)) {
@@ -572,6 +589,7 @@
           telefone: formData.get('telefone') || '',
           valorContratado: Number(formData.get('valorContratado') || 0),
           dataTeste: formData.get('dataTeste') || '',
+          estadoPagamento: formData.get('estadoPagamento') || '',
           observacoes: observacoes,
           dataCadastro: new Intl.DateTimeFormat('pt-AO', {
             timeZone: 'Africa/Luanda',
@@ -587,7 +605,7 @@
       function resetFormState() {
         form.reset();
         resetMessage();
-        ['nomeCompleto', 'bi', 'email', 'telefone', 'valorContratado', 'dataTeste', 'observacoes'].forEach(clearFieldError);
+        ['nomeCompleto', 'bi', 'email', 'telefone', 'valorContratado', 'dataTeste', 'estadoPagamento', 'observacoes'].forEach(clearFieldError);
       }
 
       function confirmClearForm() {
@@ -674,6 +692,9 @@
       clearBtn.addEventListener('click', confirmClearForm);
       ['nomeCompleto', 'email', 'telefone', 'valorContratado', 'dataTeste'].forEach((fieldName) => {
         form.elements[fieldName].addEventListener('input', () => validateField(fieldName));
+      });
+      form.elements.estadoPagamento.addEventListener('change', () => {
+        validateField('estadoPagamento');
       });
     </script>
   </body>

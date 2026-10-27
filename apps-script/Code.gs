@@ -75,6 +75,7 @@ function validateIncomingData(data) {
   const valorContratado = Number(data.valorContratado);
   const email = String(data.email || '').trim();
   const diaTeste = String(data.dataTeste || '').trim();
+  const estadoPagamento = String(data.estadoPagamento || '').trim();
 
   if (!nomeCompleto) {
     errors.push('O nome completo é obrigatório.');
@@ -86,6 +87,10 @@ function validateIncomingData(data) {
 
   if (!Number.isFinite(valorContratado) || valorContratado < 0) {
     errors.push('O valor contratado deve ser numérico e não negativo.');
+  }
+
+  if (!['Pago', 'Pendente', 'Pagamento incompleto'].includes(estadoPagamento)) {
+    errors.push('Selecione um estado de pagamento válido.');
   }
 
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -196,10 +201,11 @@ function buildRow(sheet, data, clientId, headerRowNumber) {
   setValue(['Data de cadastro', 'Data de registo'], registrationDate);
   setValue(['Nome completo'], String(data.nomeCompleto || '').trim());
   setValue(['BI (opcional)', 'BI'], String(data.bi || '').trim());
-  setValue(['Email'], String(data.email || '').trim());
+  setValue(['Email', 'E-mail'], String(data.email || '').trim());
   setValue(['Telefone'], String(data.telefone || '').trim());
   setValue(['Valor contratado (Kz)', 'Valor contratado'], Number(data.valorContratado || 0));
   setValue(['Dia da prova/teste', 'Dia do teste', 'Data do teste'], String(data.dataTeste || '').trim());
+  setValue(['Status de pagamento', 'Estado do pagamento'], String(data.estadoPagamento || '').trim());
   setValue(['Status da preparação', 'Estado da preparação'], '');
   setValue(['Nota/observações', 'Observações', 'Nota'], String(data.observacoes || '').trim());
 
