@@ -110,33 +110,41 @@ function normalizeHeader(value) {
     .trim();
 }
 
-function findHeaderRowNumber(sheet) {
-  const requiredHeaders = [
-    ['id', 'id'],
-    ['data de cadastro', 'data de registo'],
-    ['nome completo', 'nome completo'],
-    ['bi opcional', 'bi'],
-    ['email', 'email'],
-    ['telefone', 'telefone'],
-    ['valor contratado kz', 'valor contratado'],
-    ['dia da prova teste', 'dia do teste', 'data do teste'],
-    ['status de pagamento', 'estado do pagamento'],
-    ['status da preparacao', 'estado da preparacao'],
-    ['nota observacoes', 'observacoes', 'nota']
-  ];
+const CLIENT_HEADER_ALIASES = [
+  ['id'],
+  ['data de cadastro', 'data de registo'],
+  ['nome completo'],
+  ['bi opcional', 'bi'],
+  ['email', 'e mail'],
+  ['telefone'],
+  ['valor contratado kz', 'valor contratado'],
+  ['dia da prova teste', 'dia do teste', 'data do teste'],
+  ['status de pagamento', 'estado do pagamento'],
+  ['status da preparacao', 'estado da preparacao'],
+  ['nota observacoes', 'observacoes', 'nota']
+];
 
+function findHeaderRowNumber(sheet) {
   const maxScanRows = Math.min(sheet.getLastRow(), 20);
+  if (maxScanRows === 0) {
+    throw new Error('A aba CLIENTES está vazia; não encontrei a linha de cabeçalhos.');
+  }
+
   const headerCandidates = sheet.getRange(1, 1, maxScanRows, Math.max(sheet.getLastColumn(), 20)).getValues();
 
   for (let rowIndex = 0; rowIndex < headerCandidates.length; rowIndex += 1) {
     const rowValues = headerCandidates[rowIndex].map((header) => normalizeHeader(header));
-    const rowMatches = requiredHeaders.filter((aliases) => aliases.some((alias) => rowValues.includes(normalizeHeader(alias))));
+    const rowMatches = CLIENT_HEADER_ALIASES.filter((aliases) => aliases.some((alias) => rowValues.includes(normalizeHeader(alias))));
     if (rowMatches.length >= 5) {
       return rowIndex + 1;
     }
   }
 
-  return 2;
+  const foundHeaders = headerCandidates
+    .flat()
+    .map((header) => String(header || '').trim())
+    .filter(Boolean);
+  throw new Error('Não encontrei os cabeçalhos da aba CLIENTES nas primeiras 20 linhas. Cabeçalhos encontrados: ' + foundHeaders.join(' | '));
 }
 
 function getClientSheet() {
@@ -147,27 +155,21 @@ function getClientSheet() {
     throw new Error('A aba CLIENTES não foi encontrada na planilha.');
   }
 
-  const requiredHeaders = [
-    ['id', 'id'],
-    ['data de cadastro', 'data de registo'],
-    ['nome completo', 'nome completo'],
-    ['bi opcional', 'bi'],
-    ['email', 'email'],
-    ['telefone', 'telefone'],
-    ['valor contratado kz', 'valor contratado'],
-    ['dia da prova teste', 'dia do teste', 'data do teste'],
-    ['status de pagamento', 'estado do pagamento'],
-    ['status da preparacao', 'estado da preparacao'],
-    ['nota observacoes', 'observacoes', 'nota']
-  ];
-
   const headerRowNumber = findHeaderRowNumber(sheet);
   const headerRow = sheet.getRange(headerRowNumber, 1, 1, Math.max(sheet.getLastColumn(), 20)).getValues()[0];
   const existingHeaders = headerRow.map((header) => normalizeHeader(header));
-  const missingHeaders = requiredHeaders.filter((aliases) => !aliases.some((alias) => existingHeaders.includes(normalizeHeader(alias))));
+  const missingHeaders = CLIENT_HEADER_ALIASES.filter((aliases) => !aliases.some((alias) => existingHeaders.includes(normalizeHeader(alias))));
 
   if (missingHeaders.length > 0) {
-    throw new Error('A aba CLIENTES não contém todas as colunas esperadas.');
+    const foundHeaders = headerRow
+      .map((header) => String(header || '').trim())
+      .filter(Boolean);
+    throw new Error(
+      'A aba CLIENTES não contém todas as colunas esperadas. Em falta: ' +
+      missingHeaders.map((aliases) => aliases[0]).join(', ') +
+      '. Cabeçalhos encontrados: ' +
+      foundHeaders.join(' | ')
+    );
   }
 
   return sheet;
