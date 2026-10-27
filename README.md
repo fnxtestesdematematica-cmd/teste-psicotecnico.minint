@@ -28,6 +28,8 @@ const GOOGLE_APPS_SCRIPT_URL = 'COLOQUE_AQUI_O_URL_PUBLICADO_DO_APPS_SCRIPT';
 
 O formulário envia JSON como `text/plain` para evitar o preflight CORS causado por `application/json`. Este formato também é aceite pela versão anterior do endpoint. A versão atual de `apps-script/Code.gs` continua a ser a recomendada, especialmente para encontrar cabeçalhos que começam na segunda linha.
 
+O Apps Script grava os dados na primeira linha de cliente vazia abaixo dos cabeçalhos, em vez de usar `appendRow()`. Assim, linhas já formatadas da tabela são reutilizadas e a coluna de estado de pagamento não é alterada.
+
 ## Publicar o site com GitHub Pages
 
 1. Envie o conteúdo deste projeto para um repositório GitHub com a branch `main`.

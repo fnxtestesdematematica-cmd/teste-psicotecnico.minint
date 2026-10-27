@@ -20,15 +20,18 @@ function doPost(e) {
 
     const sheet = getClientSheet();
     const headerRowNumber = findHeaderRowNumber(sheet);
-    const nextClientId = generateNextClientId(sheet);
+    const nextClientId = generateNextClientId(sheet, headerRowNumber);
     const row = buildRow(sheet, payload, nextClientId, headerRowNumber);
-    sheet.appendRow(row);
+    const rowNumber = findNextAvailableRow(sheet, headerRowNumber);
+    row.forEach((field) => {
+      sheet.getRange(rowNumber, field.column).setValue(field.value);
+    });
 
     return jsonResponse({
       ok: true,
       message: 'Cliente cadastrado com sucesso!',
       id: nextClientId,
-      rowNumber: sheet.getLastRow()
+      rowNumber: rowNumber
     });
   } catch (error) {
     const message = error && error.message ? error.message : 'Erro interno ao gravar o cliente.';
@@ -180,13 +183,13 @@ function buildRow(sheet, data, clientId, headerRowNumber) {
   const headerRow = sheet.getRange(headerRowNumber || 2, 1, 1, sheet.getLastColumn()).getValues()[0];
   const headers = headerRow.map((header, index) => ({ header: normalizeHeader(header), index }));
 
-  const rowValues = Array(sheet.getLastColumn()).fill('');
+  const fieldsToWrite = [];
 
   const setValue = (headerNames, value) => {
     const targetAliases = Array.isArray(headerNames) ? headerNames : [headerNames];
     const found = headers.find((item) => targetAliases.some((alias) => item.header === normalizeHeader(alias)));
     if (!found) return;
-    rowValues[found.index] = value;
+    fieldsToWrite.push({ column: found.index + 1, value: value });
   };
 
   setValue(['ID', 'Id'], clientId);
@@ -197,21 +200,59 @@ function buildRow(sheet, data, clientId, headerRowNumber) {
   setValue(['Telefone'], String(data.telefone || '').trim());
   setValue(['Valor contratado (Kz)', 'Valor contratado'], Number(data.valorContratado || 0));
   setValue(['Dia da prova/teste', 'Dia do teste', 'Data do teste'], String(data.dataTeste || '').trim());
-  setValue(['Status de pagamento', 'Estado do pagamento'], '');
   setValue(['Status da preparação', 'Estado da preparação'], '');
   setValue(['Nota/observações', 'Observações', 'Nota'], String(data.observacoes || '').trim());
 
-  return rowValues;
+  return fieldsToWrite;
 }
 
-function generateNextClientId(sheet) {
-  const lastRow = sheet.getLastRow();
+function findNextAvailableRow(sheet, headerRowNumber) {
+  const headerRow = sheet.getRange(headerRowNumber, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const normalizedHeaders = headerRow.map((header) => normalizeHeader(header));
+  const paymentStatusAliases = ['status de pagamento', 'estado do pagamento'];
+  const paymentStatusColumn = normalizedHeaders.findIndex((header) =>
+    paymentStatusAliases.some((alias) => header === normalizeHeader(alias))
+  );
+  const firstDataRow = headerRowNumber + 1;
+  const maxRows = sheet.getMaxRows();
+  if (firstDataRow > maxRows) {
+    sheet.insertRowsAfter(maxRows, firstDataRow - maxRows);
+  }
 
-  if (lastRow < 2) {
+  const lastRowToScan = Math.min(Math.max(sheet.getLastRow() + 1, firstDataRow), sheet.getMaxRows());
+  const rowsToScan = lastRowToScan - firstDataRow + 1;
+  const displayRows = sheet.getRange(firstDataRow, 1, rowsToScan, sheet.getLastColumn()).getDisplayValues();
+
+  for (let rowIndex = 0; rowIndex < displayRows.length; rowIndex += 1) {
+    const hasData = displayRows[rowIndex].some((value, columnIndex) =>
+      columnIndex !== paymentStatusColumn && String(value || '').trim() !== ''
+    );
+    if (!hasData) {
+      return firstDataRow + rowIndex;
+    }
+  }
+
+  const nextRow = lastRowToScan + 1;
+  if (nextRow > maxRows) {
+    sheet.insertRowsAfter(maxRows, 1);
+  }
+  return nextRow;
+}
+
+function generateNextClientId(sheet, headerRowNumber) {
+  const headerRow = sheet.getRange(headerRowNumber, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const idColumnIndex = headerRow.findIndex((header) => normalizeHeader(header) === 'id');
+  if (idColumnIndex === -1) {
+    throw new Error('A coluna ID não foi encontrada na aba CLIENTES.');
+  }
+
+  const firstDataRow = headerRowNumber + 1;
+  const lastRow = sheet.getLastRow();
+  if (lastRow < firstDataRow) {
     return 'CLI-0001';
   }
 
-  const ids = sheet.getRange(2, 1, Math.max(lastRow - 1, 1), 1).getValues().flat();
+  const ids = sheet.getRange(firstDataRow, idColumnIndex + 1, lastRow - firstDataRow + 1, 1).getValues().flat();
   let maxNumber = 0;
 
   ids.forEach((value) => {
