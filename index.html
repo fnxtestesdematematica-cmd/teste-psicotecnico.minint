@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestão de Clientes</title>
+    <style>
+      :root {
+        --bg: #071d34;
+        --bg-deep: #051827;
+        --panel: rgba(14, 45, 78, 0.92);
+        --panel-soft: rgba(17, 55, 94, 0.92);
+        --panel-strong: #0e2f50;
+        --gold: #f7cd4a;
+        --gold-dark: #d8a92c;
+        --text: #edf5ff;
+        --muted: #b9cfe9;
+        --input: rgba(12, 29, 48, 0.9);
+        --input-border: rgba(255, 255, 255, 0.14);
+        --valid: #7ce8b2;
+        --danger: #ff6b6b;
+        --success: #7de6b4;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background:
+          linear-gradient(rgba(9, 21, 38, 0.7), rgba(9, 21, 38, 0.7)),
+          linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px),
+          linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+          var(--bg);
+        background-size: cover, 28px 28px, 28px 28px, cover;
+        color: var(--text);
+      }
+
+      body {
+        min-height: 100vh;
+        padding: 0;
+      }
+
+      .page-shell {
+        width: 100%;
+        min-height: 100vh;
+      }
+
+      .site-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px;
+        background: rgba(17, 17, 31, 0.7);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(6px);
+      }
+
+      .brand-mini {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text);
+        font-weight: 700;
+        font-size: 0.92rem;
+      }
+
+      .brand-badge {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: rgba(247, 205, 74, 0.18);
+        border: 1px solid rgba(247, 205, 74, 0.6);
+      }
+
+      .topbar-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 94px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--gold);
+        color: #0a1830;
+        font-weight: 800;
+        font-size: 0.74rem;
+        letter-spacing: 0.02em;
+      }
+
+      .content-wrap {
+        width: min(100%, 1100px);
+        margin: 0 auto;
+        padding: 18px 14px 28px;
+      }
+
+      .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background: rgba(12, 31, 53, 0.9);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px 18px 0 0;
+        padding: 18px 14px;
+      }
+
+      .page-header .icon {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(247, 205, 74, 0.2), rgba(247, 205, 74, 0.05));
+        border: 1px solid rgba(247, 205, 74, 0.3);
+        font-size: 22px;
+      }
+
+      .header-copy {
+        flex: 1;
+      }
+
+      .eyebrow {
+        margin: 0 0 6px;
+        color: var(--gold);
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+
+      .page-header h1 {
+        margin: 0;
+        font-size: clamp(1.35rem, 5vw, 2.1rem);
+        line-height: 1.08;
+        letter-spacing: 0.01em;
+        color: var(--text);
+      }
+
+      .page-header p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .card {
+        background: linear-gradient(180deg, rgba(12, 36, 60, 0.95), rgba(9, 30, 50, 0.92));
+        border: 1px solid rgba(255,255,255,0.08);
+        border-top: none;
+        border-radius: 0 0 18px 18px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        padding: 20px 14px 18px;
+      }
+
+      .form-section {
+        padding-top: 8px;
+      }
+
+      .form-section + .form-section {
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+      }
+
+      .section-title {
+        margin: 0 0 14px;
+        color: var(--gold);
+        font-size: 0.88rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+
+      .field.full-width {
+        grid-column: 1 / -1;
+      }
+
+      label {
+        font-weight: 700;
+        color: var(--text);
+        font-size: 0.82rem;
+      }
+
+      .required-mark {
+        color: var(--gold);
+        margin-left: 2px;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        border: 1px solid var(--input-border);
+        background: var(--input);
+        border-radius: 12px;
+        padding: 12px 13px;
+        font-size: 0.96rem;
+        color: var(--text);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+      }
+
+      input::placeholder,
+      textarea::placeholder {
+        color: rgba(233, 242, 255, 0.52);
+      }
+
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: none;
+        border-color: rgba(247, 205, 74, 0.74);
+        box-shadow: 0 0 0 4px rgba(247, 205, 74, 0.12);
+      }
+
+      input[readonly],
+      textarea[readonly] {
+        background: rgba(255,255,255,0.02);
+        color: var(--muted);
+      }
+
+      textarea {
+        min-height: 104px;
+        resize: vertical;
+      }
+
+      .field.invalid input,
+      .field.invalid textarea,
+      .field.invalid select {
+        border-color: rgba(255, 107, 107, 0.9);
+        background: rgba(255, 107, 107, 0.06);
+      }
+
+      .validation-message {
+        min-height: 18px;
+        font-size: 0.76rem;
+        color: var(--danger);
+        display: none;
+      }
+
+      .field.invalid .validation-message {
+        display: block;
+      }
+
+      .meta-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .actions {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 12px;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+      }
+
+      .btn {
+        border: none;
+        border-radius: 999px;
+        padding: 13px 18px;
+        font-size: 0.96rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+
+      .btn:disabled {
+        opacity: 0.7;
+        cursor: wait;
+      }
+
+      .btn-primary {
+        background: linear-gradient(180deg, #f9d364, var(--gold));
+        color: #0a1830;
+        box-shadow: 0 12px 18px rgba(247, 205, 74, 0.2);
+      }
+
+      .btn-secondary {
+        background: rgba(255,255,255,0.06);
+        color: var(--text);
+        border: 1px solid rgba(255,255,255,0.12);
+      }
+
+      .status-message {
+        margin-top: 16px;
+        min-height: 24px;
+        font-weight: 700;
+        font-size: 0.86rem;
+        border-radius: 12px;
+        display: none;
+        padding: 10px 12px;
+      }
+
+      .status-message.success {
+        display: block;
+        background: rgba(125, 230, 180, 0.12);
+        color: var(--success);
+        border: 1px solid rgba(125, 230, 180, 0.32);
+      }
+
+      .status-message.error {
+        display: block;
+        background: rgba(255, 107, 107, 0.1);
+        color: var(--danger);
+        border: 1px solid rgba(255, 107, 107, 0.3);
+      }
+
+      @media (min-width: 700px) {
+        .content-wrap {
+          padding-top: 26px;
+        }
+
+        .page-header {
+          padding: 20px 22px;
+        }
+
+        .card {
+          padding: 28px 24px 22px;
+        }
+
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 18px 20px;
+        }
+
+        .meta-row {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 18px 20px;
+        }
+
+        .actions {
+          flex-direction: row;
+          justify-content: flex-end;
+        }
+
+        .btn {
+          min-width: 180px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="site-topbar">
+        <div class="brand-mini">
+          <span class="brand-badge">👥</span>
+          <span>Gestão de Clientes</span>
+        </div>
+        <span class="topbar-badge">Cadastro</span>
+      </div>
+
+      <div class="content-wrap">
+        <header class="page-header">
+          <div class="icon" aria-hidden="true">👥</div>
+          <div class="header-copy">
+            <div class="eyebrow">Registo oficial</div>
+            <h1>GESTÃO DE CLIENTES</h1>
+            <p>Cadastro e registo de clientes para preparação de testes e exames.</p>
+          </div>
+        </header>
+
+        <main class="card">
+        <form id="clienteForm" novalidate>
+          <section class="form-section">
+            <h2 class="section-title">Dados pessoais</h2>
+            <div class="grid">
+              <div class="field">
+                <label for="nomeCompleto">Nome completo <span class="required-mark">*</span></label>
+                <input id="nomeCompleto" name="nomeCompleto" type="text" maxlength="150" placeholder="Ex.: Ana Maria João" required />
+                <span class="validation-message" data-error-for="nomeCompleto"></span>
+              </div>
+
+              <div class="field">
+                <label for="bi">Número do Bilhete de Identidade (BI)</label>
+                <input id="bi" name="bi" type="text" maxlength="30" placeholder="Ex.: 000123456LA055" />
+                <span class="validation-message" data-error-for="bi"></span>
+              </div>
+
+              <div class="field">
+                <label for="email">E-mail</label>
+                <input id="email" name="email" type="email" maxlength="120" placeholder="exemplo@email.com" />
+                <span class="validation-message" data-error-for="email"></span>
+              </div>
+
+              <div class="field">
+                <label for="telefone">Número de telefone/WhatsApp <span class="required-mark">*</span></label>
+                <input id="telefone" name="telefone" type="tel" maxlength="30" placeholder="Ex.: +244 923 123 456" required />
+                <span class="validation-message" data-error-for="telefone"></span>
+              </div>
+
+            </div>
+          </section>
+
+          <section class="form-section">
+            <h2 class="section-title">Dados do serviço</h2>
+            <div class="grid">
+              <div class="field">
+                <label for="valorContratado">Valor contratado (Kz) <span class="required-mark">*</span></label>
+                <input id="valorContratado" name="valorContratado" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex.: 45000" required />
+                <span class="validation-message" data-error-for="valorContratado"></span>
+              </div>
+
+              <div class="field">
+                <label for="dataTeste">Dia do teste (Outubro/2026)</label>
+                <input id="dataTeste" name="dataTeste" type="number" min="1" max="31" inputmode="numeric" placeholder="Ex.: 15" />
+                <span class="validation-message" data-error-for="dataTeste"></span>
+              </div>
+
+              <div class="field full-width">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes" maxlength="1000" placeholder="Detalhes relevantes para a preparação..."></textarea>
+                <span class="validation-message" data-error-for="observacoes"></span>
+              </div>
+            </div>
+          </section>
+
+          <div class="actions">
+            <button type="button" id="clearBtn" class="btn btn-secondary">Limpar formulário</button>
+            <button type="submit" id="submitBtn" class="btn btn-primary">Cadastrar cliente</button>
+          </div>
+
+          <div id="serverMessage" class="status-message" role="status" aria-live="polite"></div>
+        </form>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyPZIMf_i9XGoGPQbsx9mIzvCvMiQXJwi5LJN4UERuakPqrtMJbkrDHE0E8T6EWwo3u/exec';
+
+      const form = document.getElementById('clienteForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const serverMessage = document.getElementById('serverMessage');
+
+      function setMessage(messageText, type) {
+        serverMessage.textContent = messageText;
+        serverMessage.className = 'status-message';
+        if (type === 'success') {
+          serverMessage.classList.add('success');
+        } else if (type === 'error') {
+          serverMessage.classList.add('error');
+        }
+      }
+
+      function resetMessage() {
+        serverMessage.textContent = '';
+        serverMessage.className = 'status-message';
+      }
+
+      function markFieldInvalid(fieldName, message) {
+        const errorEl = document.querySelector(`[data-error-for="${fieldName}"]`);
+        const fieldWrap = errorEl ? errorEl.closest('.field') : null;
+        if (!fieldWrap) return;
+
+        fieldWrap.classList.add('invalid');
+        errorEl.textContent = message;
+      }
+
+      function clearFieldError(fieldName) {
+        const errorEl = document.querySelector(`[data-error-for="${fieldName}"]`);
+        const fieldWrap = errorEl ? errorEl.closest('.field') : null;
+        if (!fieldWrap) return;
+
+        fieldWrap.classList.remove('invalid');
+        errorEl.textContent = '';
+      }
+
+      function validateField(fieldName) {
+        const field = form.elements[fieldName];
+        if (!field) return true;
+
+        const value = field.value?.trim() || '';
+        clearFieldError(fieldName);
+
+        switch (fieldName) {
+          case 'nomeCompleto':
+            if (!value) {
+              markFieldInvalid(fieldName, 'O nome completo é obrigatório.');
+              return false;
+            }
+            break;
+          case 'email':
+            if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+              markFieldInvalid(fieldName, 'Introduza um e-mail válido.');
+              return false;
+            }
+            break;
+          case 'telefone':
+            if (!value) {
+              markFieldInvalid(fieldName, 'O número de telefone/WhatsApp é obrigatório.');
+              return false;
+            }
+            break;
+          case 'valorContratado':
+            if (!value) {
+              markFieldInvalid(fieldName, 'O valor contratado é obrigatório.');
+              return false;
+            }
+            if (Number(value) < 0 || !Number.isFinite(Number(value))) {
+              markFieldInvalid(fieldName, 'O valor deve ser numérico e não negativo.');
+              return false;
+            }
+            break;
+          case 'dataTeste':
+            if (value) {
+              const day = Number(value);
+              if (!Number.isInteger(day) || day < 1 || day > 31) {
+                markFieldInvalid(fieldName, 'O dia do teste deve estar entre 1 e 31.');
+                return false;
+              }
+            }
+            break;
+          default:
+            break;
+        }
+
+        return true;
+      }
+
+      function validateForm() {
+        let isValid = true;
+        const fieldsToCheck = ['nomeCompleto', 'email', 'telefone', 'valorContratado', 'dataTeste'];
+
+        fieldsToCheck.forEach((fieldName) => {
+          if (!validateField(fieldName)) {
+            isValid = false;
+          }
+        });
+
+        if (!isValid) {
+          const firstInvalid = document.querySelector('.field.invalid input, .field.invalid textarea, .field.invalid select');
+          if (firstInvalid) {
+            firstInvalid.focus();
+          }
+        }
+
+        return isValid;
+      }
+
+      function getPayload() {
+        const formData = new FormData(form);
+        const observacoes = String(formData.get('observacoes') || '').trim();
+
+        return {
+          nomeCompleto: formData.get('nomeCompleto') || '',
+          bi: formData.get('bi') || '',
+          email: formData.get('email') || '',
+          telefone: formData.get('telefone') || '',
+          valorContratado: Number(formData.get('valorContratado') || 0),
+          dataTeste: formData.get('dataTeste') || '',
+          observacoes: observacoes,
+          dataCadastro: new Intl.DateTimeFormat('pt-AO', {
+            timeZone: 'Africa/Luanda',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          }).format(new Date())
+        };
+      }
+
+      function resetFormState() {
+        form.reset();
+        resetMessage();
+        ['nomeCompleto', 'bi', 'email', 'telefone', 'valorContratado', 'dataTeste', 'observacoes'].forEach(clearFieldError);
+      }
+
+      function confirmClearForm() {
+        const hasValues = Array.from(form.elements).some((element) => {
+          if (element.type === 'button' || element.type === 'submit') return false;
+          return element.value && element.value.trim() !== '';
+        });
+
+        if (!hasValues) {
+          resetFormState();
+          return;
+        }
+
+        const confirmed = window.confirm('Tem a certeza de que pretende limpar o formulário?');
+        if (confirmed) {
+          resetFormState();
+        }
+      }
+
+      async function submitForm(event) {
+        event.preventDefault();
+        resetMessage();
+
+        if (location.protocol === 'file:') {
+          setMessage('Abra esta página com um servidor local (ex.: python -m http.server 8000) antes de submeter o formulário. O navegador bloqueia o fetch em ficheiros locais.', 'error');
+          return;
+        }
+
+        if (!validateForm()) {
+          return;
+        }
+
+        const payload = getPayload();
+        const endpoint = GOOGLE_APPS_SCRIPT_URL;
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'A guardar...';
+
+        try {
+          const requestBody = new URLSearchParams({
+            payload: JSON.stringify(payload)
+          });
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            body: requestBody
+          });
+
+          const rawText = await response.text();
+          let result = {};
+
+          if (rawText) {
+            try {
+              result = JSON.parse(rawText);
+            } catch (error) {
+              result = { ok: false, message: rawText };
+            }
+          }
+
+          if (!response.ok || result.ok === false) {
+            const serverMessageText = result.message || 'Não foi possível gravar o cliente.';
+            throw new Error(serverMessageText);
+          }
+
+          const finalMessage = result.message || 'Cliente cadastrado com sucesso!';
+          setMessage(finalMessage, 'success');
+          form.reset();
+        } catch (error) {
+          const detail = error && error.message ? error.message : 'Erro desconhecido ao comunicar com o servidor.';
+          setMessage(`Falha ao cadastrar cliente: ${detail}`, 'error');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Cadastrar cliente';
+        }
+      }
+
+      form.addEventListener('submit', submitForm);
+      clearBtn.addEventListener('click', confirmClearForm);
+      ['nomeCompleto', 'email', 'telefone', 'valorContratado', 'dataTeste'].forEach((fieldName) => {
+        form.elements[fieldName].addEventListener('input', () => validateField(fieldName));
+      });
+    </script>
+  </body>
+</html>
