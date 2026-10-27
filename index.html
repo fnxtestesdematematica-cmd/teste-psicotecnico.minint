@@ -627,12 +627,12 @@
         submitBtn.textContent = 'A guardar...';
 
         try {
-          const requestBody = new URLSearchParams({
-            payload: JSON.stringify(payload)
-          });
           const response = await fetch(endpoint, {
             method: 'POST',
-            body: requestBody
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8'
+            },
+            body: JSON.stringify(payload)
           });
 
           const rawText = await response.text();

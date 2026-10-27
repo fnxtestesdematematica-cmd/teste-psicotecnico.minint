@@ -26,7 +26,7 @@ const GOOGLE_APPS_SCRIPT_URL = 'COLOQUE_AQUI_O_URL_PUBLICADO_DO_APPS_SCRIPT';
 7. Atualize `GOOGLE_APPS_SCRIPT_URL` no `index.html` se a URL tiver mudado.
 8. Guarde e volte a implementar uma nova versão sempre que alterar o código do Apps Script.
 
-O formulário envia os dados como formulário URL-encoded para evitar o preflight CORS causado por `application/json`. O código do Apps Script deve ser atualizado para a versão deste repositório e depois implementado novamente.
+O formulário envia JSON como `text/plain` para evitar o preflight CORS causado por `application/json`. Este formato também é aceite pela versão anterior do endpoint. A versão atual de `apps-script/Code.gs` continua a ser a recomendada, especialmente para encontrar cabeçalhos que começam na segunda linha.
 
 ## Publicar o site com GitHub Pages
 
