@@ -651,7 +651,14 @@
             throw new Error(serverMessageText);
           }
 
-          const finalMessage = result.message || 'Cliente cadastrado com sucesso!';
+          const confirmationDetails = [
+            result.id ? `ID: ${result.id}` : '',
+            result.rowNumber ? `linha ${result.rowNumber} da aba CLIENTES` : ''
+          ].filter(Boolean).join(' · ');
+          const finalMessage = [
+            result.message || 'Cliente cadastrado com sucesso!',
+            confirmationDetails
+          ].filter(Boolean).join(' ');
           setMessage(finalMessage, 'success');
           form.reset();
         } catch (error) {
