@@ -647,7 +647,7 @@
           <div class="header-copy">
             <div class="eyebrow">Registo oficial</div>
             <h1>GESTÃO DE CLIENTES</h1>
-            <p>Cadastro e registo de clientes para preparação de testes e exames.</p>
+            <p>Cadastro e registo de clientes para teste psicotécnico.</p>
           </div>
         </header>
 
@@ -664,7 +664,7 @@
 
               <div class="field">
                 <label for="bi">Número do Bilhete de Identidade (BI)</label>
-                <input id="bi" name="bi" type="text" maxlength="30" placeholder="Ex.: 000123456LA055" />
+                <input id="bi" name="bi" type="text" maxlength="14" minlength="14" placeholder="Ex.: 000123456LA055" required/>
                 <span class="validation-message" data-error-for="bi"></span>
               </div>
 
@@ -687,7 +687,7 @@
             <h2 class="section-title">Dados do serviço</h2>
             <div class="grid">
               <div class="field">
-                <label for="valorContratado">Valor contratado (Kz) <span class="required-mark">*</span></label>
+                <label for="valorContratado">Valor do pagamento (Kz) <span class="required-mark">*</span></label>
                 <input id="valorContratado" name="valorContratado" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex.: 45000" required />
                 <span class="validation-message" data-error-for="valorContratado"></span>
               </div>
